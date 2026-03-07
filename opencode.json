@@ -4,11 +4,15 @@
         "laravel-boost": {
             "type": "local",
             "enabled": true,
-            "command": [
-                "php",
-                "artisan",
-                "boost:mcp"
-            ]
+            "command": ["php", "artisan", "boost:mcp"]
+        },
+        "devtools-browser": {
+            "type": "local",
+            "enabled": true,
+            "command": ["npx", "-y", "chrome-devtools-mcp@latest"]
         }
+    },
+    "permission": {
+        "devtools-browser_*": "allow"
     }
 }

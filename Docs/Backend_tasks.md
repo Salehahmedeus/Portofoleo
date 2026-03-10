@@ -27,16 +27,16 @@ Design and implement the database schema that supports all portfolio content, an
 
 ### Tasks
 
-- [ ] Create `projects` migration — id, title, slug, type (enum: development/uiux), summary, featured (boolean), sort_order, thumbnail path, SEO fields (meta_title, meta_description), timestamps
-- [ ] Create `project_details` migration — id, project_id (FK), field_name, field_value (text/JSON), to support flexible fields per project type
-- [ ] Create `project_images` migration — id, project_id (FK), image_path, alt_text, sort_order, type (thumbnail/gallery/wireframe/screenshot), timestamps
-- [ ] Create `services` migration — id, title, description, icon, sort_order, timestamps
-- [ ] Create `skills` migration — id, name, category, icon/logo_path, sort_order, timestamps
-- [ ] Create `site_settings` migration — id, key (unique), value (text/JSON), group, timestamps — for hero content, contact info, social links, page SEO
-- [ ] Create `contact_submissions` migration — id, name, email, subject, message, read (boolean), ip_address, timestamps
-- [ ] Create `analytics_events` migration — id, event_type, event_data (JSON), page_url, referrer, device_type, country, ip_address, session_id, timestamps
-- [ ] Create Eloquent models for all tables with relationships, casts, and fillable/guarded attributes
-- [ ] Create database seeder with sample data for development and testing
+- [x] Create `projects` migration — id, title, slug, type (enum: development/uiux), summary, featured (boolean), sort_order, thumbnail path, SEO fields (meta_title, meta_description), timestamps
+- [x] Create `project_details` migration — id, project_id (FK), field_name, field_value (text/JSON), to support flexible fields per project type
+- [x] Create `project_images` migration — id, project_id (FK), image_path, alt_text, sort_order, type (thumbnail/gallery/wireframe/screenshot), timestamps
+- [x] Create `services` migration — id, title, description, icon, sort_order, timestamps
+- [x] Create `skills` migration — id, name, category, icon/logo_path, sort_order, timestamps
+- [x] Create `site_settings` migration — id, key (unique), value (text/JSON), group, timestamps — for hero content, contact info, social links, page SEO
+- [x] Create `contact_submissions` migration — id, name, email, subject, message, read (boolean), ip_address, timestamps
+- [x] Create `analytics_events` migration — id, event_type, event_data (JSON), page_url, referrer, device_type, country, ip_address, session_id, timestamps
+- [x] Create Eloquent models for all tables with relationships, casts, and fillable/guarded attributes
+- [x] Create database seeder with sample data for development and testing
 
 ---
 
@@ -46,14 +46,14 @@ Secure the admin dashboard with authentication and protect all admin routes.
 
 ### Tasks
 
-- [ ] Configure Laravel authentication (Breeze / Fortify / Sanctum)
-- [ ] Set up admin user seeder (single admin account for V1)
-- [ ] Create admin authentication middleware to protect dashboard routes
-- [ ] Implement login endpoint with proper validation and error responses
-- [ ] Implement logout endpoint with session invalidation
-- [ ] Configure session management and CSRF protection
-- [ ] Add rate limiting on login attempts to prevent brute-force attacks
-- [ ] Set up two-factor authentication support (optional, if already scaffolded)
+- [x] Configure Laravel authentication (Breeze / Fortify / Sanctum)
+- [x] Set up admin user seeder (single admin account for V1)
+- [x] Create admin authentication middleware to protect dashboard routes
+- [x] Implement login endpoint with proper validation and error responses
+- [x] Implement logout endpoint with session invalidation
+- [x] Configure session management and CSRF protection
+- [x] Add rate limiting on login attempts to prevent brute-force attacks
+- [x] Set up two-factor authentication support (optional, if already scaffolded)
 
 ---
 

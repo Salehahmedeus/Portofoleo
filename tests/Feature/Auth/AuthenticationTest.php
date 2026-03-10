@@ -61,6 +61,25 @@ test('users can not authenticate with invalid password', function () {
     $this->assertGuest();
 });
 
+test('login returns json validation errors when email and password are missing', function () {
+    $response = $this->postJson(route('login.store'), []);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['email', 'password']);
+});
+
+test('login returns json validation error for invalid credentials', function () {
+    $user = User::factory()->create();
+
+    $response = $this->postJson(route('login.store'), [
+        'email' => $user->email,
+        'password' => 'wrong-password',
+    ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('email');
+});
+
 test('users can logout', function () {
     $user = User::factory()->create();
 

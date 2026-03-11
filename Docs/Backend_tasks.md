@@ -63,13 +63,13 @@ Build the API endpoints that serve portfolio data to the public-facing React fro
 
 ### Tasks
 
-- [ ] Create `HomeController` — return hero content, featured projects, services, skills, contact info, social links
-- [ ] Create `ProjectController@index` — return all published projects with pagination or full list (cards data: title, slug, type, summary, thumbnail)
-- [ ] Create `ProjectController@show` — return full project detail by slug, including all detail fields, images, and links
-- [ ] Create API Resource / Transformer classes for Project, Service, Skill to standardize JSON responses
-- [ ] Implement graceful handling of missing optional fields (null fields excluded from response)
-- [ ] Add response caching for public endpoints to improve performance
-- [ ] Set proper SEO-friendly slugs for project URLs using route model binding
+- [x] Create `HomeController` — return hero content, featured projects, services, skills, contact info, social links
+- [x] Create `ProjectController@index` — return all published projects with pagination or full list (cards data: title, slug, type, summary, thumbnail)
+- [x] Create `ProjectController@show` — return full project detail by slug, including all detail fields, images, and links
+- [x] Create API Resource / Transformer classes for Project, Service, Skill to standardize JSON responses
+- [x] Implement graceful handling of missing optional fields (null fields excluded from response)
+- [x] Add response caching for public endpoints to improve performance
+- [x] Set proper SEO-friendly slugs for project URLs using route model binding
 
 ---
 
@@ -79,13 +79,13 @@ Handle incoming contact form submissions with validation, storage, and notificat
 
 ### Tasks
 
-- [ ] Create `ContactController@store` endpoint for form submissions
-- [ ] Create `ContactFormRequest` with validation rules: name (required), email (required, valid format), subject (optional), message (required)
-- [ ] Store submissions in `contact_submissions` table
-- [ ] Send email notification to admin on new submission (configurable recipient)
-- [ ] Implement rate limiting on contact submissions (e.g., max 3 per IP per hour)
-- [ ] Add honeypot field validation for spam protection
-- [ ] Return appropriate success/error JSON responses
+- [x] Create `ContactController@store` endpoint for form submissions
+- [x] Create `ContactFormRequest` with validation rules: name (required), email (required, valid format), subject (optional), message (required)
+- [x] Store submissions in `contact_submissions` table
+- [x] Send email notification to admin on new submission (configurable recipient)
+- [x] Implement rate limiting on contact submissions (e.g., max 3 per IP per hour)
+- [x] Add honeypot field validation for spam protection
+- [x] Return appropriate success/error JSON responses
 
 ---
 
@@ -95,18 +95,18 @@ Full project management endpoints for the admin dashboard.
 
 ### Tasks
 
-- [ ] Create `Admin\ProjectController@index` — list all projects with search, filter by type, sort options
-- [ ] Create `Admin\ProjectController@store` — create a new project with all fields and validation
-- [ ] Create `Admin\ProjectController@show` — return single project for editing
-- [ ] Create `Admin\ProjectController@update` — update project fields, images, SEO, featured status
-- [ ] Create `Admin\ProjectController@destroy` — delete project with cascade (images, details)
-- [ ] Create `StoreProjectRequest` and `UpdateProjectRequest` with comprehensive validation rules
-- [ ] Implement image upload handling — validate file type/size, store in configured disk, generate thumbnails
-- [ ] Create endpoint for reordering projects (`Admin\ProjectController@reorder`)
-- [ ] Create endpoint for toggling featured status (`Admin\ProjectController@toggleFeatured`)
-- [ ] Implement slug auto-generation from title with uniqueness check
-- [ ] Add image deletion endpoint for removing individual gallery images
-- [ ] Handle URL validation for external links (live demo, GitHub, prototype)
+- [x] Create `Admin\ProjectController@index` — list all projects with search, filter by type, sort options
+- [x] Create `Admin\ProjectController@store` — create a new project with all fields and validation
+- [x] Create `Admin\ProjectController@show` — return single project for editing
+- [x] Create `Admin\ProjectController@update` — update project fields, images, SEO, featured status
+- [x] Create `Admin\ProjectController@destroy` — delete project with cascade (images, details)
+- [x] Create `StoreProjectRequest` and `UpdateProjectRequest` with comprehensive validation rules
+- [x] Implement image upload handling — validate file type/size and store in configured disk (thumbnail generation deferred to Milestone 9 image service)
+- [x] Create endpoint for reordering projects (`Admin\ProjectController@reorder`)
+- [x] Create endpoint for toggling featured status (`Admin\ProjectController@toggleFeatured`)
+- [x] Implement slug auto-generation from title with uniqueness check
+- [x] Add image deletion endpoint for removing individual gallery images
+- [x] Handle URL validation for external links (live demo, GitHub, prototype)
 
 ---
 
@@ -116,13 +116,13 @@ Endpoints for managing homepage content, services, skills, contact info, and sit
 
 ### Tasks
 
-- [ ] Create `Admin\SettingsController` — CRUD for site_settings (hero text, contact info, social links, page SEO)
-- [ ] Create `Admin\ServiceController` — CRUD for services with reordering
-- [ ] Create `Admin\SkillController` — CRUD for skills with category management and reordering
-- [ ] Create validation requests for each content type
-- [ ] Implement bulk update support for reordering (services, skills)
-- [ ] Add validation for social/contact URLs (LinkedIn, GitHub, WhatsApp formats)
-- [ ] Return structured JSON responses with before/after data on updates
+- [x] Create `Admin\SettingsController` — CRUD for site_settings (hero text, contact info, social links, page SEO)
+- [x] Create `Admin\ServiceController` — CRUD for services with reordering
+- [x] Create `Admin\SkillController` — CRUD for skills with category management and reordering
+- [x] Create validation requests for each content type
+- [x] Implement bulk update support for reordering (services, skills)
+- [x] Add validation for social/contact URLs (LinkedIn, GitHub, WhatsApp formats)
+- [x] Return structured JSON responses with before/after data on updates
 
 ---
 

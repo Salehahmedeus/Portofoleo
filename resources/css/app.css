@@ -9,9 +9,11 @@
 
 @theme {
     --font-sans:
-        'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display:
+        'Outfit', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --radius-lg: var(--radius);
     --radius-md: calc(var(--radius) - 2px);
@@ -59,6 +61,13 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    --color-portfolio-accent: var(--portfolio-accent);
+    --color-portfolio-accent-soft: var(--portfolio-accent-soft);
+    --color-portfolio-accent-strong: var(--portfolio-accent-strong);
+    --color-portfolio-surface: var(--portfolio-surface);
+    --color-portfolio-gradient-from: var(--portfolio-gradient-from);
+    --color-portfolio-gradient-to: var(--portfolio-gradient-to);
 }
 
 :root {
@@ -95,6 +104,12 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.87 0 0);
+    --portfolio-accent: oklch(0.62 0.15 222);
+    --portfolio-accent-soft: oklch(0.95 0.03 230);
+    --portfolio-accent-strong: oklch(0.5 0.16 220);
+    --portfolio-surface: oklch(0.98 0.01 230);
+    --portfolio-gradient-from: oklch(0.97 0.03 230);
+    --portfolio-gradient-to: oklch(0.94 0.05 205);
 }
 
 .dark {
@@ -130,9 +145,19 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(0.269 0 0);
     --sidebar-ring: oklch(0.439 0 0);
+    --portfolio-accent: oklch(0.75 0.13 225);
+    --portfolio-accent-soft: oklch(0.31 0.04 235);
+    --portfolio-accent-strong: oklch(0.83 0.13 215);
+    --portfolio-surface: oklch(0.21 0.01 240);
+    --portfolio-gradient-from: oklch(0.27 0.04 242);
+    --portfolio-gradient-to: oklch(0.22 0.03 210);
 }
 
 @layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
     * {
         @apply border-border;
     }
@@ -140,4 +165,86 @@
     body {
         @apply bg-background text-foreground;
     }
+}
+
+@keyframes reveal-up {
+    0% {
+        opacity: 0;
+        transform: translate3d(0, 16px, 0);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+@keyframes float-soft {
+    0%,
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+
+    50% {
+        transform: translate3d(0, -8px, 0);
+    }
+}
+
+@utility font-display {
+    font-family: var(--font-display);
+}
+
+@utility text-balance {
+    text-wrap: balance;
+}
+
+@utility text-pretty {
+    text-wrap: pretty;
+}
+
+@utility reveal {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+    transition:
+        opacity 500ms var(--ease-in-out, ease),
+        transform 500ms var(--ease-in-out, ease);
+    will-change: opacity, transform;
+}
+
+@utility reveal-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+}
+
+@utility animate-reveal {
+    animation: reveal-up 500ms var(--ease-in-out, ease) both;
+}
+
+@utility float-soft {
+    animation: float-soft 7s ease-in-out infinite;
+}
+
+@utility bg-portfolio-gradient {
+    background-image: linear-gradient(
+        145deg,
+        var(--portfolio-gradient-from),
+        var(--portfolio-gradient-to)
+    );
+}
+
+@utility bg-portfolio-orb {
+    background-image: radial-gradient(
+        circle at center,
+        color-mix(in oklab, var(--portfolio-accent) 18%, transparent),
+        transparent 70%
+    );
+}
+
+@utility portfolio-glass {
+    background-color: color-mix(
+        in oklab,
+        var(--portfolio-surface) 76%,
+        transparent
+    );
+    backdrop-filter: blur(10px);
 }

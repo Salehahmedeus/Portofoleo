@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AnalyticsEvent;
+use App\Models\ContactSubmission;
+use App\Models\Project;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,6 +37,29 @@ class AnalyticsController extends Controller
             ->sortKeys()
             ->all();
 
+        $uniqueSessions = $events->pluck('session_id')->filter()->unique()->count();
+
+        $topProjectViews = $this->topProjectViews($events);
+
+        $contactSubmissionsQuery = ContactSubmission::query()
+            ->whereBetween('created_at', [$startDate, $endDate]);
+
+        $contactSubmissions = (clone $contactSubmissionsQuery)
+            ->latest()
+            ->get(['id', 'name', 'email', 'subject', 'message', 'created_at', 'read'])
+            ->map(function (ContactSubmission $submission): array {
+                return [
+                    'id' => $submission->id,
+                    'name' => $submission->name,
+                    'email' => $submission->email,
+                    'subject' => $submission->subject,
+                    'message' => $submission->message,
+                    'created_at' => $submission->created_at?->toISOString(),
+                    'read' => $submission->read,
+                ];
+            })
+            ->all();
+
         $timeline = $events
             ->groupBy(fn (AnalyticsEvent $event): string => $event->created_at->toDateString())
             ->map(fn ($group): int => $group->count())
@@ -54,9 +80,223 @@ class AnalyticsController extends Controller
             'range' => $range,
             'available_ranges' => $allowedRanges,
             'total_events' => $events->count(),
-            'unique_sessions' => $events->pluck('session_id')->filter()->unique()->count(),
+            'unique_sessions' => $uniqueSessions,
             'top_event_types' => $eventsByType,
             'daily_totals' => $dailyTotals,
+            'total_visitors' => $uniqueSessions,
+            'page_views' => $events->where('event_type', 'page_view')->count(),
+            'contact_submissions_count' => $contactSubmissionsQuery->count(),
+            'top_project' => $topProjectViews[0] ?? null,
+            'top_project_views' => $topProjectViews,
+            'traffic_sources' => $this->trafficSources($events),
+            'device_types' => $this->deviceTypes($events),
+            'country_distribution' => $this->countryDistribution($events),
+            'contact_submissions' => $contactSubmissions,
+            'outbound_clicks' => $this->outboundClicks($events),
         ]);
+    }
+
+    /**
+     * @param  Collection<int, AnalyticsEvent>  $events
+     * @return list<array{slug: string, title: string, views: int}>
+     */
+    private function topProjectViews(Collection $events): array
+    {
+        $slugCounts = $events
+            ->map(fn (AnalyticsEvent $event): ?string => $this->extractProjectSlug($event))
+            ->filter()
+            ->countBy()
+            ->sortDesc();
+
+        if ($slugCounts->isEmpty()) {
+            return [];
+        }
+
+        $titlesBySlug = Project::query()
+            ->whereIn('slug', $slugCounts->keys()->all())
+            ->get(['slug', 'title'])
+            ->mapWithKeys(fn (Project $project): array => [$project->slug => $project->title]);
+
+        return $slugCounts
+            ->map(function (int $views, string $slug) use ($titlesBySlug): array {
+                return [
+                    'slug' => $slug,
+                    'title' => $titlesBySlug->get($slug, $slug),
+                    'views' => $views,
+                ];
+            })
+            ->values()
+            ->all();
+    }
+
+    private function extractProjectSlug(AnalyticsEvent $event): ?string
+    {
+        $projectSlug = $event->event_data['project_slug'] ?? null;
+
+        if (is_string($projectSlug) && $projectSlug !== '') {
+            return $projectSlug;
+        }
+
+        $path = parse_url($event->page_url, PHP_URL_PATH);
+
+        if (! is_string($path)) {
+            return null;
+        }
+
+        if (! preg_match('#^/projects/([^/]+)$#', $path, $matches)) {
+            return null;
+        }
+
+        return $matches[1] !== '' ? $matches[1] : null;
+    }
+
+    /**
+     * @param  Collection<int, AnalyticsEvent>  $events
+     * @return array{direct: int, social: int, search: int, referral: int}
+     */
+    private function trafficSources(Collection $events): array
+    {
+        $summary = [
+            'direct' => 0,
+            'social' => 0,
+            'search' => 0,
+            'referral' => 0,
+        ];
+
+        $appHost = parse_url(config('app.url'), PHP_URL_HOST);
+
+        $events->each(function (AnalyticsEvent $event) use (&$summary, $appHost): void {
+            $source = $this->resolveTrafficSource($event->referrer, is_string($appHost) ? $appHost : null);
+            $summary[$source]++;
+        });
+
+        return $summary;
+    }
+
+    private function resolveTrafficSource(?string $referrer, ?string $appHost): string
+    {
+        if ($referrer === null || trim($referrer) === '') {
+            return 'direct';
+        }
+
+        $referrerHost = parse_url($referrer, PHP_URL_HOST);
+
+        if (! is_string($referrerHost) || $referrerHost === '') {
+            return 'referral';
+        }
+
+        if ($appHost !== null && str_ends_with($referrerHost, $appHost)) {
+            return 'direct';
+        }
+
+        $socialHosts = [
+            'facebook.com',
+            'instagram.com',
+            'linkedin.com',
+            'twitter.com',
+            'x.com',
+            't.co',
+            'youtube.com',
+            'pinterest.com',
+            'tiktok.com',
+        ];
+
+        foreach ($socialHosts as $host) {
+            if (str_ends_with($referrerHost, $host)) {
+                return 'social';
+            }
+        }
+
+        $searchHosts = [
+            'google.com',
+            'bing.com',
+            'duckduckgo.com',
+            'yahoo.com',
+            'baidu.com',
+            'yandex.com',
+        ];
+
+        foreach ($searchHosts as $host) {
+            if (str_ends_with($referrerHost, $host)) {
+                return 'search';
+            }
+        }
+
+        return 'referral';
+    }
+
+    /**
+     * @param  Collection<int, AnalyticsEvent>  $events
+     * @return array{desktop: int, mobile: int, tablet: int, unknown: int}
+     */
+    private function deviceTypes(Collection $events): array
+    {
+        $summary = [
+            'desktop' => 0,
+            'mobile' => 0,
+            'tablet' => 0,
+            'unknown' => 0,
+        ];
+
+        $events->each(function (AnalyticsEvent $event) use (&$summary): void {
+            $deviceType = $event->device_type;
+
+            if (! is_string($deviceType) || ! array_key_exists($deviceType, $summary)) {
+                $summary['unknown']++;
+
+                return;
+            }
+
+            $summary[$deviceType]++;
+        });
+
+        return $summary;
+    }
+
+    /**
+     * @param  Collection<int, AnalyticsEvent>  $events
+     * @return list<array{country: string, count: int}>
+     */
+    private function countryDistribution(Collection $events): array
+    {
+        return $events
+            ->map(function (AnalyticsEvent $event): string {
+                if (! is_string($event->country) || $event->country === '') {
+                    return 'UNKNOWN';
+                }
+
+                return strtoupper($event->country);
+            })
+            ->countBy()
+            ->sortDesc()
+            ->map(fn (int $count, string $country): array => [
+                'country' => $country,
+                'count' => $count,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @param  Collection<int, AnalyticsEvent>  $events
+     * @return list<array{target: string, count: int}>
+     */
+    private function outboundClicks(Collection $events): array
+    {
+        return $events
+            ->where('event_type', 'outbound_click')
+            ->map(function (AnalyticsEvent $event): string {
+                $target = $event->event_data['target'] ?? null;
+
+                return is_string($target) && $target !== '' ? $target : 'unknown';
+            })
+            ->countBy()
+            ->sortDesc()
+            ->map(fn (int $count, string $target): array => [
+                'target' => $target,
+                'count' => $count,
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -24,7 +24,7 @@ class UpdateProjectRequest extends FormRequest
 
         return [
             'title' => ['required', 'string', 'max:255'],
-            'slug' => ['required', 'string', 'alpha_dash', 'max:255', Rule::unique('projects', 'slug')->ignore($project?->id)],
+            'slug' => ['nullable', 'string', 'alpha_dash', 'max:255', Rule::unique('projects', 'slug')->ignore($project?->id)],
             'type' => ['required', Rule::in(['development', 'uiux'])],
             'summary' => ['required', 'string', 'max:5000'],
             'featured' => ['sometimes', 'boolean'],
@@ -35,7 +35,15 @@ class UpdateProjectRequest extends FormRequest
             'meta_description' => ['nullable', 'string', 'max:1000'],
             'details' => ['nullable', 'array'],
             'details.*.field_name' => ['required', 'string', 'max:100'],
-            'details.*.field_value' => ['nullable', 'array'],
+            'details.*.field_value' => ['nullable', function (string $attribute, mixed $value, \Closure $fail): void {
+                if (! is_array($value) && ! is_string($value) && ! is_int($value) && ! is_float($value) && ! is_bool($value) && $value !== null) {
+                    $fail('The '.$attribute.' field must be an array, string, number, boolean, or null.');
+                }
+            }],
+            'links' => ['nullable', 'array'],
+            'links.live_demo' => ['nullable', 'url', 'max:2048'],
+            'links.github' => ['nullable', 'url', 'max:2048'],
+            'links.prototype' => ['nullable', 'url', 'max:2048'],
             'images' => ['nullable', 'array', 'max:20'],
             'images.*.file' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'images.*.alt_text' => ['nullable', 'string', 'max:255'],

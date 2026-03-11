@@ -25,8 +25,38 @@ class ProjectController extends Controller
     {
         $project->load(['details', 'images']);
 
+        $previousProject = Project::query()
+            ->where(function ($query) use ($project) {
+                $query
+                    ->where('sort_order', '<', $project->sort_order)
+                    ->orWhere(function ($nestedQuery) use ($project) {
+                        $nestedQuery
+                            ->where('sort_order', $project->sort_order)
+                            ->where('id', '<', $project->id);
+                    });
+            })
+            ->orderByDesc('sort_order')
+            ->orderByDesc('id')
+            ->first(['slug', 'title']);
+
+        $nextProject = Project::query()
+            ->where(function ($query) use ($project) {
+                $query
+                    ->where('sort_order', '>', $project->sort_order)
+                    ->orWhere(function ($nestedQuery) use ($project) {
+                        $nestedQuery
+                            ->where('sort_order', $project->sort_order)
+                            ->where('id', '>', $project->id);
+                    });
+            })
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->first(['slug', 'title']);
+
         return Inertia::render('projects/show', [
             'project' => $portfolioData->transformProject($project),
+            'previous_project' => $previousProject,
+            'next_project' => $nextProject,
         ]);
     }
 }

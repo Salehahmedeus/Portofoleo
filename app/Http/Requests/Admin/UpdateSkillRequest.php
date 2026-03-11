@@ -1,15 +1,15 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Admin;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class ContactSubmissionStoreRequest extends FormRequest
+class UpdateSkillRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return (bool) $this->user()?->is_admin;
     }
 
     /**
@@ -19,9 +19,9 @@ class ContactSubmissionStoreRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'email:rfc,dns', 'max:255'],
-            'subject' => ['nullable', 'string', 'max:255'],
-            'message' => ['required', 'string', 'min:10', 'max:5000'],
+            'category' => ['required', 'string', 'max:100'],
+            'logo_path' => ['nullable', 'string', 'max:255'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

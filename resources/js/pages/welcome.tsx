@@ -270,22 +270,42 @@ export default function Welcome({
                 <Container className="flex h-16 items-center justify-between">
                     <a
                         href="#top"
-                        className="font-display text-lg font-semibold"
+                        className="rounded-sm font-display text-lg font-semibold focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                     >
                         Portfolio
                     </a>
 
                     <nav className="hidden items-center gap-5 text-sm md:flex">
-                        <a href="#projects">Projects</a>
-                        <a href="#services">Services</a>
-                        <a href="#skills">Skills</a>
-                        <a href="#contact">Contact</a>
+                        <a
+                            href="#projects"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Projects
+                        </a>
+                        <a
+                            href="#services"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Services
+                        </a>
+                        <a
+                            href="#skills"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Skills
+                        </a>
+                        <a
+                            href="#contact"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Contact
+                        </a>
                     </nav>
 
                     <div className="flex items-center gap-2">
                         <Link
                             href="/projects"
-                            className="text-sm font-medium"
+                            className="rounded-sm text-sm font-medium focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                             onClick={() => {
                                 trackEvent('cta_click', {
                                     target: '/projects',
@@ -375,7 +395,7 @@ export default function Welcome({
                             </div>
                             <Link
                                 href="/projects"
-                                className="text-sm font-medium text-portfolio-accent-strong underline-offset-4 hover:underline"
+                                className="rounded-sm text-sm font-medium text-portfolio-accent-strong underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                                 onClick={() => {
                                     trackEvent('cta_click', {
                                         target: '/projects',
@@ -656,7 +676,7 @@ export default function Welcome({
                                     {contactSettings.email ? (
                                         <a
                                             href={`mailto:${contactSettings.email}`}
-                                            className="flex items-center gap-2 hover:text-foreground"
+                                            className="flex items-center gap-2 rounded-sm hover:text-foreground focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                                             onClick={() => {
                                                 trackEvent('outbound_click', {
                                                     target: 'email',
@@ -681,7 +701,7 @@ export default function Welcome({
                                             href={contactSettings.linkedin}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="flex items-center gap-2 hover:text-foreground"
+                                            className="flex items-center gap-2 rounded-sm hover:text-foreground focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                                             onClick={() => {
                                                 trackEvent('outbound_click', {
                                                     target: 'linkedin',
@@ -699,7 +719,7 @@ export default function Welcome({
                                             href={contactSettings.github}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="flex items-center gap-2 hover:text-foreground"
+                                            className="flex items-center gap-2 rounded-sm hover:text-foreground focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                                             onClick={() => {
                                                 trackEvent('outbound_click', {
                                                     target: 'github',
@@ -717,7 +737,7 @@ export default function Welcome({
                                             href={contactSettings.whatsapp}
                                             target="_blank"
                                             rel="noreferrer"
-                                            className="flex items-center gap-2 hover:text-foreground"
+                                            className="flex items-center gap-2 rounded-sm hover:text-foreground focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                                             onClick={() => {
                                                 trackEvent('outbound_click', {
                                                     target: 'whatsapp',
@@ -743,8 +763,18 @@ export default function Welcome({
                         reserved.
                     </p>
                     <div className="flex items-center gap-4">
-                        <a href="#top">Back to top</a>
-                        <Link href="/projects">Projects</Link>
+                        <a
+                            href="#top"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Back to top
+                        </a>
+                        <Link
+                            href="/projects"
+                            className="rounded-sm focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
+                        >
+                            Projects
+                        </Link>
                     </div>
                 </Container>
             </footer>

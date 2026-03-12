@@ -7,7 +7,9 @@ use App\Models\ProjectDetail;
 use App\Models\ProjectImage;
 use App\Models\SiteSetting;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 
 class PortfolioData
 {
@@ -113,8 +115,10 @@ class PortfolioData
             ->map(function (ProjectImage $image): array {
                 return $this->stripEmpty([
                     'id' => $image->id,
+                    'disk' => $image->disk,
                     'image_path' => $image->image_path,
-                    'image_url' => $this->toPublicUrl($image->image_path),
+                    'image_url' => $this->toPublicUrl($image->image_path, $image->disk),
+                    'image_urls' => $this->variantUrls($image->variants, $image->disk),
                     'alt_text' => $image->alt_text,
                     'sort_order' => $image->sort_order,
                     'type' => $image->type,
@@ -155,13 +159,37 @@ class PortfolioData
         return $value;
     }
 
-    private function toPublicUrl(?string $path): ?string
+    private function toPublicUrl(?string $path, ?string $disk = null): ?string
     {
         if ($path === null || $path === '') {
             return null;
         }
 
-        return asset('storage/'.$path);
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk($disk ?: config('filesystems.default', 'public'));
+
+        return $storageDisk->url($path);
+    }
+
+    /**
+     * @param  array{thumbnail?: string, medium?: string, large?: string}|null  $paths
+     * @return array{thumbnail?: string, medium?: string, large?: string}|null
+     */
+    private function variantUrls(?array $paths, ?string $disk = null): ?array
+    {
+        if (! is_array($paths) || $paths === []) {
+            return null;
+        }
+
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk($disk ?: config('filesystems.default', 'public'));
+
+        $mapped = collect($paths)
+            ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+            ->map(fn (string $path): string => $storageDisk->url($path))
+            ->all();
+
+        return $mapped === [] ? null : $mapped;
     }
 
     /**

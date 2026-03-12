@@ -174,7 +174,7 @@ export default function ProjectsShow({
                     </div>
                     <Link
                         href="/projects"
-                        className="inline-flex items-center gap-2 text-sm font-medium underline-offset-4 hover:underline"
+                        className="inline-flex items-center gap-2 rounded-sm text-sm font-medium underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                     >
                         <ArrowLeftIcon className="size-4" />
                         Back to projects
@@ -240,7 +240,7 @@ export default function ProjectsShow({
                 <div className="space-y-5">
                     <Link
                         href="/projects"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+                        className="inline-flex items-center gap-2 rounded-sm text-sm font-medium text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                     >
                         <ArrowLeftIcon className="size-4" />
                         Back to projects
@@ -414,7 +414,7 @@ export default function ProjectsShow({
                         {previousProject ? (
                             <Link
                                 href={`/projects/${previousProject.slug}`}
-                                className="group rounded-2xl border bg-card p-4 text-left transition-colors hover:border-portfolio-accent/40"
+                                className="group rounded-2xl border bg-card p-4 text-left transition-colors hover:border-portfolio-accent/40 focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                             >
                                 <p className="mb-1 inline-flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     <ArrowLeftIcon className="size-4" />
@@ -431,7 +431,7 @@ export default function ProjectsShow({
                         {nextProject ? (
                             <Link
                                 href={`/projects/${nextProject.slug}`}
-                                className="group rounded-2xl border bg-card p-4 text-right transition-colors hover:border-portfolio-accent/40"
+                                className="group rounded-2xl border bg-card p-4 text-right transition-colors hover:border-portfolio-accent/40 focus-visible:ring-2 focus-visible:ring-portfolio-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background focus-visible:outline-none"
                             >
                                 <p className="mb-1 inline-flex items-center gap-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     Next project

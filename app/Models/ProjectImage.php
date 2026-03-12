@@ -19,9 +19,12 @@ class ProjectImage extends Model
     protected $fillable = [
         'project_id',
         'image_path',
+        'disk',
         'alt_text',
         'sort_order',
         'type',
+        'variants',
+        'metadata',
     ];
 
     /**
@@ -34,6 +37,8 @@ class ProjectImage extends Model
         return [
             'project_id' => 'integer',
             'sort_order' => 'integer',
+            'variants' => 'array',
+            'metadata' => 'array',
         ];
     }
 

@@ -39,7 +39,9 @@ class AppServiceProvider extends ServiceProvider
         });
 
         RateLimiter::for('analytics-events', function (Request $request): Limit {
-            return Limit::perMinute(60)->by($request->session()->getId().'|'.$request->ip());
+            $sessionKey = $request->hasSession() ? $request->session()->getId() : 'no-session';
+
+            return Limit::perMinute(60)->by($sessionKey.'|'.$request->ip());
         });
 
         Date::use(CarbonImmutable::class);

@@ -7,8 +7,11 @@ use App\Models\AnalyticsEvent;
 use App\Models\ContactSubmission;
 use App\Models\Project;
 use Carbon\CarbonImmutable;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -96,6 +99,155 @@ class AnalyticsController extends Controller
         ]);
     }
 
+    public function overview(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+        $events = $this->eventsWithin($startDate, $endDate);
+
+        $totalVisitors = $events
+            ->map(fn (AnalyticsEvent $event): ?string => $event->session_id ?? $event->ip_address)
+            ->filter()
+            ->unique()
+            ->count();
+
+        $uniqueVisitors = $events
+            ->where('event_type', 'page_view')
+            ->map(fn (AnalyticsEvent $event): ?string => $event->session_id ?? $event->ip_address)
+            ->filter()
+            ->unique()
+            ->count();
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'total_visitors' => $totalVisitors,
+            'page_views' => $events->where('event_type', 'page_view')->count(),
+            'unique_visitors' => $uniqueVisitors,
+            'contact_submissions_count' => ContactSubmission::query()
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->count(),
+        ]);
+    }
+
+    public function topProjects(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'data' => $this->topProjectViews($this->eventsWithin($startDate, $endDate)),
+        ]);
+    }
+
+    public function sources(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'data' => $this->trafficSources($this->eventsWithin($startDate, $endDate)),
+        ]);
+    }
+
+    public function devices(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'data' => $this->deviceTypes($this->eventsWithin($startDate, $endDate)),
+        ]);
+    }
+
+    public function countries(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'data' => $this->countryDistribution($this->eventsWithin($startDate, $endDate)),
+        ]);
+    }
+
+    public function clicks(Request $request): JsonResponse
+    {
+        [$startDate, $endDate, $range] = $this->resolveDateRange($request);
+
+        return response()->json([
+            'range' => $range,
+            'start_date' => $startDate->toDateString(),
+            'end_date' => $endDate->toDateString(),
+            'data' => $this->outboundClicks($this->eventsWithin($startDate, $endDate)),
+        ]);
+    }
+
+    /**
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable, 2: string}
+     */
+    private function resolveDateRange(Request $request): array
+    {
+        $range = (string) $request->query('range', '30d');
+        $presetRanges = [
+            '7d' => 7,
+            '30d' => 30,
+            '90d' => 90,
+        ];
+
+        if (array_key_exists($range, $presetRanges)) {
+            $days = $presetRanges[$range];
+
+            return [
+                CarbonImmutable::today()->subDays($days - 1)->startOfDay(),
+                CarbonImmutable::today()->endOfDay(),
+                $range,
+            ];
+        }
+
+        if ($range !== 'custom') {
+            return [
+                CarbonImmutable::today()->subDays(29)->startOfDay(),
+                CarbonImmutable::today()->endOfDay(),
+                '30d',
+            ];
+        }
+
+        $validated = Validator::make($request->query(), [
+            'start_date' => ['required', 'date'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ])->validate();
+
+        $startDate = CarbonImmutable::parse($validated['start_date'])->startOfDay();
+        $endDate = CarbonImmutable::parse($validated['end_date'])->endOfDay();
+
+        if ($endDate->lt($startDate)) {
+            throw ValidationException::withMessages([
+                'end_date' => 'The end date must be after or equal to the start date.',
+            ]);
+        }
+
+        return [$startDate, $endDate, 'custom'];
+    }
+
+    /**
+     * @return Collection<int, AnalyticsEvent>
+     */
+    private function eventsWithin(CarbonImmutable $startDate, CarbonImmutable $endDate): Collection
+    {
+        return AnalyticsEvent::query()
+            ->whereBetween('created_at', [$startDate, $endDate])
+            ->orderBy('created_at')
+            ->get();
+    }
+
     /**
      * @param  Collection<int, AnalyticsEvent>  $events
      * @return list<array{slug: string, title: string, views: int}>
@@ -103,6 +255,7 @@ class AnalyticsController extends Controller
     private function topProjectViews(Collection $events): array
     {
         $slugCounts = $events
+            ->filter(fn (AnalyticsEvent $event): bool => in_array($event->event_type, ['page_view', 'project_view'], true))
             ->map(fn (AnalyticsEvent $event): ?string => $this->extractProjectSlug($event))
             ->filter()
             ->countBy()

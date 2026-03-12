@@ -6,6 +6,7 @@ use App\Models\Project;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\File;
 
 class UpdateProjectRequest extends FormRequest
 {
@@ -29,7 +30,7 @@ class UpdateProjectRequest extends FormRequest
             'summary' => ['required', 'string', 'max:5000'],
             'featured' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'min:0'],
-            'thumbnail' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'thumbnail' => ['nullable', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(5 * 1024)],
             'remove_thumbnail' => ['sometimes', 'boolean'],
             'meta_title' => ['nullable', 'string', 'max:255'],
             'meta_description' => ['nullable', 'string', 'max:1000'],
@@ -45,7 +46,7 @@ class UpdateProjectRequest extends FormRequest
             'links.github' => ['nullable', 'url', 'max:2048'],
             'links.prototype' => ['nullable', 'url', 'max:2048'],
             'images' => ['nullable', 'array', 'max:20'],
-            'images.*.file' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            'images.*.file' => ['required', File::image()->types(['jpg', 'jpeg', 'png', 'webp'])->max(5 * 1024)],
             'images.*.alt_text' => ['nullable', 'string', 'max:255'],
             'images.*.type' => ['nullable', Rule::in(['gallery', 'wireframe', 'screenshot', 'thumbnail'])],
             'images.*.sort_order' => ['nullable', 'integer', 'min:0'],

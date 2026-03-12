@@ -9,18 +9,20 @@ use App\Http\Requests\Admin\ToggleFeaturedProjectRequest;
 use App\Http\Requests\Admin\UpdateProjectRequest;
 use App\Models\Project;
 use App\Models\ProjectImage;
+use App\Services\ImageUploadService;
 use App\Support\PortfolioData;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ProjectController extends Controller
 {
+    public function __construct(private ImageUploadService $imageUploadService) {}
+
     public function index(Request $request, PortfolioData $portfolioData): Response|JsonResponse
     {
         $search = trim((string) $request->query('search', ''));
@@ -91,7 +93,9 @@ class ProjectController extends Controller
         $validated = $request->validated();
 
         $project = DB::transaction(function () use ($request, $validated): Project {
-            $thumbnailPath = $request->file('thumbnail')?->store('projects/thumbnails', 'public');
+            $thumbnailUpload = $request->file('thumbnail') !== null
+                ? $this->imageUploadService->storeUploadedImage($request->file('thumbnail'), 'projects/thumbnails')
+                : null;
             $slug = $this->generateUniqueSlug($validated['slug'] ?? null, $validated['title']);
 
             $project = Project::query()->create([
@@ -101,7 +105,7 @@ class ProjectController extends Controller
                 'summary' => $validated['summary'],
                 'featured' => (bool) ($validated['featured'] ?? false),
                 'sort_order' => (int) ($validated['sort_order'] ?? 0),
-                'thumbnail_path' => $thumbnailPath,
+                'thumbnail_path' => $thumbnailUpload['canonical_path'] ?? null,
                 'meta_title' => $validated['meta_title'] ?? null,
                 'meta_description' => $validated['meta_description'] ?? null,
             ]);
@@ -113,17 +117,20 @@ class ProjectController extends Controller
             }
 
             foreach ($validated['images'] ?? [] as $index => $image) {
-                $path = $request->file("images.{$index}.file")?->store('projects/gallery', 'public');
-
-                if ($path === null) {
+                if ($request->file("images.{$index}.file") === null) {
                     continue;
                 }
 
+                $upload = $this->imageUploadService->storeUploadedImage($request->file("images.{$index}.file"), 'projects/gallery');
+
                 $project->images()->create([
-                    'image_path' => $path,
+                    'image_path' => $upload['canonical_path'],
+                    'disk' => $upload['disk'],
                     'alt_text' => $image['alt_text'] ?? null,
                     'sort_order' => (int) ($image['sort_order'] ?? $index),
                     'type' => $image['type'] ?? 'gallery',
+                    'variants' => $upload['paths'],
+                    'metadata' => $upload['metadata'],
                 ]);
             }
 
@@ -161,16 +168,17 @@ class ProjectController extends Controller
             $slug = $this->generateUniqueSlug($validated['slug'] ?? null, $validated['title'], $project);
 
             if ((bool) ($validated['remove_thumbnail'] ?? false) && $currentThumbnail !== null) {
-                Storage::disk('public')->delete($currentThumbnail);
+                $this->imageUploadService->deletePaths($currentThumbnail);
                 $nextThumbnail = null;
             }
 
             if ($request->file('thumbnail') !== null) {
                 if ($currentThumbnail !== null && $currentThumbnail !== '') {
-                    Storage::disk('public')->delete($currentThumbnail);
+                    $this->imageUploadService->deletePaths($currentThumbnail);
                 }
 
-                $nextThumbnail = $request->file('thumbnail')->store('projects/thumbnails', 'public');
+                $nextThumbnail = $this->imageUploadService
+                    ->storeUploadedImage($request->file('thumbnail'), 'projects/thumbnails')['canonical_path'];
             }
 
             $project->update([
@@ -203,23 +211,26 @@ class ProjectController extends Controller
                     ->get();
 
                 foreach ($imagesToDelete as $image) {
-                    Storage::disk('public')->delete($image->image_path);
+                    $this->imageUploadService->deleteProjectImage($image);
                     $image->delete();
                 }
             }
 
             foreach ($validated['images'] ?? [] as $index => $image) {
-                $path = $request->file("images.{$index}.file")?->store('projects/gallery', 'public');
-
-                if ($path === null) {
+                if ($request->file("images.{$index}.file") === null) {
                     continue;
                 }
 
+                $upload = $this->imageUploadService->storeUploadedImage($request->file("images.{$index}.file"), 'projects/gallery');
+
                 $project->images()->create([
-                    'image_path' => $path,
+                    'image_path' => $upload['canonical_path'],
+                    'disk' => $upload['disk'],
                     'alt_text' => $image['alt_text'] ?? null,
                     'sort_order' => (int) ($image['sort_order'] ?? $index),
                     'type' => $image['type'] ?? 'gallery',
+                    'variants' => $upload['paths'],
+                    'metadata' => $upload['metadata'],
                 ]);
             }
         });
@@ -231,13 +242,13 @@ class ProjectController extends Controller
     {
         DB::transaction(function () use ($project): void {
             if ($project->thumbnail_path !== null && $project->thumbnail_path !== '') {
-                Storage::disk('public')->delete($project->thumbnail_path);
+                $this->imageUploadService->deletePaths($project->thumbnail_path);
             }
 
             $images = $project->images()->get();
 
             foreach ($images as $image) {
-                Storage::disk('public')->delete($image->image_path);
+                $this->imageUploadService->deleteProjectImage($image);
             }
 
             $project->delete();
@@ -281,7 +292,7 @@ class ProjectController extends Controller
             abort(404);
         }
 
-        Storage::disk('public')->delete($image->image_path);
+        $this->imageUploadService->deleteProjectImage($image);
         $image->delete();
 
         return response()->json([

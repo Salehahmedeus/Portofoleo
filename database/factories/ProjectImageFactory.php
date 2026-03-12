@@ -22,10 +22,13 @@ class ProjectImageFactory extends Factory
     {
         return [
             'project_id' => Project::factory(),
-            'image_path' => 'projects/'.fake()->uuid().'.jpg',
+            'image_path' => 'projects/'.fake()->uuid().'_large.webp',
+            'disk' => 'public',
             'alt_text' => fake()->optional()->sentence(6),
             'sort_order' => fake()->numberBetween(0, 12),
             'type' => fake()->randomElement(['thumbnail', 'gallery', 'wireframe', 'screenshot']),
+            'variants' => null,
+            'metadata' => null,
         ];
     }
 }

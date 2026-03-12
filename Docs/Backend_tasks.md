@@ -132,17 +132,17 @@ Track visitor behavior and serve aggregated analytics data to the admin dashboar
 
 ### Tasks
 
-- [ ] Create analytics tracking middleware — capture page views, device type, referrer, country (via IP geolocation)
-- [ ] Create `AnalyticsController@trackEvent` endpoint — log custom events (outbound clicks on email, WhatsApp, LinkedIn, GitHub, demo links)
-- [ ] Create `Admin\AnalyticsController@overview` — return summary metrics: total visitors, page views, unique visitors, contact submissions count
-- [ ] Create `Admin\AnalyticsController@topProjects` — return most-viewed projects ranked
-- [ ] Create `Admin\AnalyticsController@sources` — return traffic source breakdown
-- [ ] Create `Admin\AnalyticsController@devices` — return device type distribution
-- [ ] Create `Admin\AnalyticsController@countries` — return visitor country distribution
-- [ ] Create `Admin\AnalyticsController@clicks` — return outbound click counts grouped by channel
-- [ ] Implement date range filtering for all analytics endpoints (7d, 30d, 90d, custom)
-- [ ] Add session tracking logic to distinguish unique visitors from repeat page views
-- [ ] Create a scheduled command to clean up old raw analytics data (retain aggregated data)
+- [x] Create analytics tracking middleware — capture page views, device type, referrer, country (via IP geolocation)
+- [x] Create `AnalyticsController@trackEvent` endpoint — log custom events (outbound clicks on email, WhatsApp, LinkedIn, GitHub, demo links)
+- [x] Create `Admin\AnalyticsController@overview` — return summary metrics: total visitors, page views, unique visitors, contact submissions count
+- [x] Create `Admin\AnalyticsController@topProjects` — return most-viewed projects ranked
+- [x] Create `Admin\AnalyticsController@sources` — return traffic source breakdown
+- [x] Create `Admin\AnalyticsController@devices` — return device type distribution
+- [x] Create `Admin\AnalyticsController@countries` — return visitor country distribution
+- [x] Create `Admin\AnalyticsController@clicks` — return outbound click counts grouped by channel
+- [x] Implement date range filtering for all analytics endpoints (7d, 30d, 90d, custom)
+- [x] Add session tracking logic to distinguish unique visitors from repeat page views
+- [x] Create a scheduled command to clean up old raw analytics data (retain aggregated data)
 
 ---
 
@@ -152,14 +152,14 @@ Robust image handling for project assets — upload, storage, optimization, and 
 
 ### Tasks
 
-- [ ] Configure file storage disk (local for dev, S3 for production)
-- [ ] Implement image upload service — validate, resize, optimize, store
-- [ ] Generate multiple image sizes (thumbnail, medium, large) for responsive delivery
-- [ ] Convert uploaded images to WebP format for performance
-- [ ] Implement image deletion with storage cleanup
-- [ ] Add orphan image cleanup logic (images not linked to any project)
-- [ ] Set maximum file size and allowed MIME type validation
-- [ ] Return public URLs for stored images in API responses
+- [x] Configure file storage disk (local for dev, S3 for production)
+- [x] Implement image upload service — validate, resize, optimize, store
+- [x] Generate multiple image sizes (thumbnail, medium, large) for responsive delivery
+- [x] Convert uploaded images to WebP format for performance
+- [x] Implement image deletion with storage cleanup
+- [x] Add orphan image cleanup logic (images not linked to any project)
+- [x] Set maximum file size and allowed MIME type validation
+- [x] Return public URLs for stored images in API responses
 
 ---
 

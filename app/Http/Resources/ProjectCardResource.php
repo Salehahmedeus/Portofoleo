@@ -2,8 +2,10 @@
 
 namespace App\Http\Resources;
 
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /** @mixin \App\Models\Project */
 class ProjectCardResource extends JsonResource
@@ -32,6 +34,9 @@ class ProjectCardResource extends JsonResource
             return null;
         }
 
-        return asset('storage/'.$path);
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk(config('filesystems.default', 'public'));
+
+        return $storageDisk->url($path);
     }
 }

@@ -32,4 +32,10 @@ Route::middleware(['auth', 'verified', 'admin'])
         Route::resource('settings', SettingsController::class)->except(['create', 'edit']);
 
         Route::get('analytics', [AnalyticsController::class, 'index'])->name('analytics.index');
+        Route::get('analytics/overview', [AnalyticsController::class, 'overview'])->name('analytics.overview');
+        Route::get('analytics/top-projects', [AnalyticsController::class, 'topProjects'])->name('analytics.top-projects');
+        Route::get('analytics/sources', [AnalyticsController::class, 'sources'])->name('analytics.sources');
+        Route::get('analytics/devices', [AnalyticsController::class, 'devices'])->name('analytics.devices');
+        Route::get('analytics/countries', [AnalyticsController::class, 'countries'])->name('analytics.countries');
+        Route::get('analytics/clicks', [AnalyticsController::class, 'clicks'])->name('analytics.clicks');
     });

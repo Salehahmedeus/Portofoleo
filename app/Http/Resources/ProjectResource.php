@@ -4,8 +4,10 @@ namespace App\Http\Resources;
 
 use App\Models\ProjectDetail;
 use App\Models\ProjectImage;
+use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /** @mixin \App\Models\Project */
 class ProjectResource extends JsonResource
@@ -27,6 +29,7 @@ class ProjectResource extends JsonResource
             'sort_order' => (int) $this->sort_order,
             'thumbnail_path' => $this->whenNotNull($this->thumbnail_path),
             'thumbnail_url' => $this->whenNotNull($this->publicUrl($this->thumbnail_path)),
+            'thumbnail_urls' => $this->whenNotNull($this->variantUrls($this->variantPaths($this->thumbnail_path))),
             'meta_title' => $this->whenNotNull($this->meta_title),
             'meta_description' => $this->whenNotNull($this->meta_description),
             $this->mergeWhen($this->relationLoaded('details'), [
@@ -71,8 +74,10 @@ class ProjectResource extends JsonResource
             ->map(function (ProjectImage $image): array {
                 $payload = [
                     'id' => $image->id,
+                    'disk' => $image->disk,
                     'image_path' => $image->image_path,
-                    'image_url' => $this->publicUrl($image->image_path),
+                    'image_url' => $this->publicUrl($image->image_path, $image->disk),
+                    'image_urls' => $this->variantUrls($image->variants, $image->disk),
                     'sort_order' => (int) $image->sort_order,
                 ];
 
@@ -105,12 +110,56 @@ class ProjectResource extends JsonResource
         return $detail->field_value;
     }
 
-    private function publicUrl(?string $path): ?string
+    private function publicUrl(?string $path, ?string $disk = null): ?string
     {
         if ($path === null || $path === '') {
             return null;
         }
 
-        return asset('storage/'.$path);
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk($disk ?: config('filesystems.default', 'public'));
+
+        return $storageDisk->url($path);
+    }
+
+    /**
+     * @param  array{thumbnail?: string, medium?: string, large?: string}|null  $paths
+     * @return array{thumbnail?: string, medium?: string, large?: string}|null
+     */
+    private function variantUrls(?array $paths, ?string $disk = null): ?array
+    {
+        if (! is_array($paths) || $paths === []) {
+            return null;
+        }
+
+        /** @var FilesystemAdapter $storageDisk */
+        $storageDisk = Storage::disk($disk ?: config('filesystems.default', 'public'));
+
+        $mapped = collect($paths)
+            ->filter(fn (mixed $path): bool => is_string($path) && $path !== '')
+            ->map(fn (string $path): string => $storageDisk->url($path))
+            ->all();
+
+        return $mapped === [] ? null : $mapped;
+    }
+
+    /**
+     * @return array{thumbnail?: string, medium?: string, large?: string}|null
+     */
+    private function variantPaths(?string $canonicalPath): ?array
+    {
+        if ($canonicalPath === null || $canonicalPath === '') {
+            return null;
+        }
+
+        if (! str_ends_with($canonicalPath, '_large.webp')) {
+            return null;
+        }
+
+        return [
+            'thumbnail' => str_replace('_large.webp', '_thumbnail.webp', $canonicalPath),
+            'medium' => str_replace('_large.webp', '_medium.webp', $canonicalPath),
+            'large' => $canonicalPath,
+        ];
     }
 }

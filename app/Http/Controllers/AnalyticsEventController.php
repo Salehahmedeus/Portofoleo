@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 
 class AnalyticsEventController extends Controller
 {
-    public function store(AnalyticsEventStoreRequest $request): JsonResponse
+    public function trackEvent(AnalyticsEventStoreRequest $request): JsonResponse
     {
         $validated = $request->validated();
 
@@ -21,12 +21,17 @@ class AnalyticsEventController extends Controller
             'device_type' => $validated['device_type'] ?? null,
             'country' => isset($validated['country']) ? Str::upper($validated['country']) : null,
             'ip_address' => $request->ip(),
-            'session_id' => $validated['session_id'] ?? $request->session()->getId(),
+            'session_id' => $validated['session_id'] ?? ($request->hasSession() ? $request->session()->getId() : null),
         ]);
 
         return response()->json([
             'message' => 'Event stored successfully.',
             'id' => $event->id,
         ], 201);
+    }
+
+    public function store(AnalyticsEventStoreRequest $request): JsonResponse
+    {
+        return $this->trackEvent($request);
     }
 }
